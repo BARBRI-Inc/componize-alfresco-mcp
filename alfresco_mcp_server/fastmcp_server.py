@@ -110,13 +110,21 @@ async def upload_document(
 
 @mcp.tool
 async def download_document(
-    node_id: str, 
+    node_id: str,
     save_to_disk: bool = True,
     attachment: bool = True,
+    destination_dir: str = None,
     ctx: Context = None
 ) -> str:
-    """Download a document from Alfresco repository."""
-    return await download_document_impl(node_id, save_to_disk, attachment, ctx)
+    """Download a document from Alfresco repository.
+
+    Args:
+        node_id: The Alfresco node ID to download
+        save_to_disk: Save file to disk (default: True)
+        attachment: Download as attachment (default: True)
+        destination_dir: Custom destination folder (default: ~/Downloads)
+    """
+    return await download_document_impl(node_id, save_to_disk, attachment, destination_dir, ctx)
 
 @mcp.tool
 async def create_folder(
