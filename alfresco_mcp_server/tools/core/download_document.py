@@ -19,20 +19,22 @@ logger = logging.getLogger(__name__)
 
 
 async def download_document_impl(
-    node_id: str, 
+    node_id: str,
     save_to_disk: bool = True,
     attachment: bool = True,
+    destination_dir: str = None,
     ctx: Optional[Context] = None
 ) -> str:
     """Download a document from Alfresco repository.
-    
+
     Args:
         node_id: Node ID of the document to download
-        save_to_disk: If True, saves file to Downloads folder (default, AI-friendly). 
+        save_to_disk: If True, saves file to Downloads folder (default, AI-friendly).
                      If False, returns base64 content (testing/debugging)
         attachment: If True, downloads as attachment (default). If False, opens for preview in browser
+        destination_dir: Custom destination folder (default: ~/Downloads)
         ctx: MCP context for progress reporting
-    
+
     Returns:
         File path and confirmation if save_to_disk=True, or base64 content if False
     """
@@ -125,10 +127,14 @@ async def download_document_impl(
         
         if save_to_disk:
             # AI-Client friendly: Save file to Downloads folder with content-aware handling
-            
-            # Create Downloads directory if it doesn't exist
-            downloads_dir = pathlib.Path.home() / "Downloads"
-            downloads_dir.mkdir(exist_ok=True)
+
+            # Use custom destination or default to ~/Downloads
+            if destination_dir:
+                downloads_dir = pathlib.Path(destination_dir)
+                downloads_dir.mkdir(parents=True, exist_ok=True)
+            else:
+                downloads_dir = pathlib.Path.home() / "Downloads"
+                downloads_dir.mkdir(exist_ok=True)
             
             # Content-aware file handling
             file_extension = pathlib.Path(filename).suffix.lower()
@@ -177,7 +183,7 @@ async def download_document_impl(
             result += f"💾 Saved to: {file_path}\n"
             result += f"📁 Directory: {downloads_dir}\n"
             result += f"🕒 Downloaded: {download_time}\n\n"
-            result += f"File saved to your Downloads folder for easy access.\n"
+            result += f"File saved to {downloads_dir} for easy access.\n"
             result += f"You can now open, edit, or move the file as needed.\n"
             
             if content_type_info['category'] and content_type_info['category'].strip():
