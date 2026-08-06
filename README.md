@@ -1,4 +1,4 @@
-# Python Alfresco MCP Server v1.1 🚀
+# Python Alfresco MCP Server v1.2 🚀
 
 [![PyPI version](https://img.shields.io/pypi/v/python-alfresco-mcp-server)](https://pypi.org/project/python-alfresco-mcp-server/)
 [![PyPI downloads](https://pepy.tech/badge/python-alfresco-mcp-server)](https://pepy.tech/project/python-alfresco-mcp-server)
@@ -12,6 +12,15 @@ checkin, checkout, cancel checkout, create folder, folder browse, delete node, a
 Built with [FastMCP 3](https://github.com/PrefectHQ/fastmcp). 
 Features complete documentation, examples, and 
 config for various MCP clients (Claude Desktop, MCP Inspector, references to configuring others).
+
+## 🌟 What's New in v1.2
+
+- **Alfresco authentication methods**: connect via **basic**, **ticket**, or **OAuth2/OIDC** (`ALFRESCO_AUTH_METHOD` + `ALFRESCO_OAUTH2_*`, backed by `python-alfresco-api` 1.2.1) — see [Authentication](#-authentication).
+- **Optional MCP transport authentication**: secure the MCP server itself with an OAuth2 bearer token (`MCP_TRANSPORT_AUTH=true`), validated against your IdP's JWKS (HTTP/SSE transports; stdio unaffected).
+- **FastMCP 3**: upgraded to `fastmcp>=3.4.5,<4` (transport auth uses `JWTVerifier`).
+- **`download_document` custom folder**: optional `destination_dir` (default `~/Downloads`) — thanks [@jeremie-lesage](https://github.com/jeremie-lesage) ([#1](https://github.com/stevereiner/python-alfresco-mcp-server/pull/1)).
+- **Packaging**: switched to the hatchling build backend.
+- Requires **python-alfresco-api ≥ 1.2.1** (OAuth2/OIDC auth + OAuth2 service-account `displayName` fix).
 
 ## 🌟 What's New in v1.1
 
@@ -171,9 +180,14 @@ uv sync                    # Basic dependencies
 uv sync --extra dev        # With development tools  
 uv sync --extra test       # With testing tools
 uv sync --extra all        # Everything
+
+# Or an editable install into the active virtual environment (pip-style):
+uv pip install -e .
 ```
 
 ### 4. Configure Alfresco Connection
+
+> The examples below use HTTP **Basic** auth. Alfresco also supports **ticket** and **OAuth2/OIDC** (`ALFRESCO_AUTH_METHOD` + `ALFRESCO_OAUTH2_*`), and you can optionally secure the MCP transport with an OAuth2 bearer (`MCP_TRANSPORT_AUTH`) — see the [Authentication](#-authentication) section for all methods.
 
 **Option 1: Environment Variables**
 ```bash
