@@ -39,6 +39,7 @@ All documentation in this directory follows these standards:
 
 ## 🔄 Recent Updates
 
+- **v1.2.0**: Alfresco auth methods (basic / ticket / OAuth2), optional OAuth2 bearer for the MCP transport itself, FastMCP 3, python-alfresco-api >= 1.2.1, config samples under `claude-desktop-configs/` and `mcp-inspector-configs/`
 - **v1.1.0**: Updated tool count and improved documentation
 - **v1.1.0**: Corrected tool count to 15 (4 search + 11 core tools)
 - **v1.1.0**: Removed marketing language for professional tone

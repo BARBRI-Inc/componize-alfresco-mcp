@@ -16,15 +16,51 @@ class AlfrescoConfig(BaseModel):
         description="Alfresco server URL"
     )
     
-    # Authentication
+    # Authentication method: basic | ticket | oauth2
+    auth_method: str = Field(
+        default_factory=lambda: os.getenv("ALFRESCO_AUTH_METHOD", "basic").lower(),
+        description="Alfresco auth method: basic | ticket | oauth2"
+    )
+
+    # Authentication (basic / ticket)
     username: str = Field(
         default_factory=lambda: os.getenv("ALFRESCO_USERNAME", "admin"),
         description="Alfresco username"
     )
-    
+
     password: str = Field(
         default_factory=lambda: os.getenv("ALFRESCO_PASSWORD", "admin"),
         description="Alfresco password"
+    )
+
+    # OAuth2 (auth_method=oauth2) — Alfresco Identity Service / any OIDC IdP
+    oauth2_client_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ALFRESCO_OAUTH2_CLIENT_ID"),
+        description="OAuth2 client id"
+    )
+    oauth2_client_secret: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ALFRESCO_OAUTH2_CLIENT_SECRET"),
+        description="OAuth2 client secret"
+    )
+    oauth2_token_endpoint: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ALFRESCO_OAUTH2_TOKEN_ENDPOINT"),
+        description="OAuth2 token endpoint URL"
+    )
+    oauth2_grant_type: str = Field(
+        default_factory=lambda: os.getenv("ALFRESCO_OAUTH2_GRANT_TYPE", "client_credentials"),
+        description="OAuth2 grant type: client_credentials | refresh_token"
+    )
+    oauth2_scope: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ALFRESCO_OAUTH2_SCOPE"),
+        description="OAuth2 scope"
+    )
+    oauth2_access_token: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ALFRESCO_OAUTH2_ACCESS_TOKEN"),
+        description="Pre-obtained OAuth2 access token (optional)"
+    )
+    oauth2_refresh_token: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ALFRESCO_OAUTH2_REFRESH_TOKEN"),
+        description="OAuth2 refresh token (optional)"
     )
     
     # Connection settings

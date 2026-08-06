@@ -161,14 +161,8 @@ def mock_search_results():
 
 def pytest_collection_modifyitems(config, items):
     """Modify test collection to handle markers."""
-    if config.getoption("--integration"):
-        # Only run integration tests
-        skip_unit = pytest.mark.skip(reason="Integration test run - skipping unit tests")
-        for item in items:
-            if "integration" not in item.keywords:
-                item.add_marker(skip_unit)
-    else:
-        # Skip integration tests by default
+    if not config.getoption("--integration"):
+        # Skip integration tests by default; with --integration, unit + integration both run
         skip_integration = pytest.mark.skip(reason="Integration tests require --integration flag")
         for item in items:
             if "integration" in item.keywords:
@@ -181,7 +175,7 @@ def pytest_addoption(parser):
         "--integration",
         action="store_true",
         default=False,
-        help="Run integration tests (requires live Alfresco server)"
+        help="Also run integration tests (requires live Alfresco server); default is unit tests only"
     )
     parser.addoption(
         "--performance",

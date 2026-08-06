@@ -1,5 +1,5 @@
 """
-Integration tests for FastMCP 2.0 server with live Alfresco instance.
+Integration tests for FastMCP server with live Alfresco instance.
 These tests require a running Alfresco server and use the --integration flag.
 """
 import pytest

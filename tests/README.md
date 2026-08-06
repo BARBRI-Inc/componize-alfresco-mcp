@@ -47,6 +47,6 @@ python tests/mcp_specific/test_server_status.py
 3. Note: MCP Inspector shows warning about risky auth and includes token in URL
 
 ## Testing with Claude Desktop
-1. Update `claude-desktop-config.json` with current paths
+1. Update a sample under `claude-desktop-configs/` with current paths
 2. Restart Claude Desktop application
 3. Test MCP tools directly in Claude conversation 

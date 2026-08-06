@@ -5,7 +5,7 @@ Model Context Protocol server for Alfresco Content Services.
 Provides AI-native access to Alfresco content management and search operations.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __title__ = "MCP Server for Alfresco"
 __description__ = "Model Context Protocol server for Alfresco Content Services"
 

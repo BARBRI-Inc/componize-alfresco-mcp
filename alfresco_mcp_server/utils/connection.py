@@ -17,11 +17,57 @@ def get_alfresco_config() -> dict:
     """Get Alfresco configuration from environment variables."""
     return {
         'alfresco_url': os.getenv('ALFRESCO_URL', 'http://localhost:8080'),
+        'auth_method': os.getenv('ALFRESCO_AUTH_METHOD', 'basic').lower(),  # basic | ticket | oauth2
         'username': os.getenv('ALFRESCO_USERNAME', 'admin'),
         'password': os.getenv('ALFRESCO_PASSWORD', 'admin'),
         'verify_ssl': os.getenv('ALFRESCO_VERIFY_SSL', 'false').lower() == 'true',
-        'timeout': int(os.getenv('ALFRESCO_TIMEOUT', '30'))
+        'timeout': int(os.getenv('ALFRESCO_TIMEOUT', '30')),
+        'oauth2': {
+            'client_id': os.getenv('ALFRESCO_OAUTH2_CLIENT_ID'),
+            'client_secret': os.getenv('ALFRESCO_OAUTH2_CLIENT_SECRET'),
+            'token_endpoint': os.getenv('ALFRESCO_OAUTH2_TOKEN_ENDPOINT'),
+            'grant_type': os.getenv('ALFRESCO_OAUTH2_GRANT_TYPE', 'client_credentials'),
+            'scope': os.getenv('ALFRESCO_OAUTH2_SCOPE'),
+            'access_token': os.getenv('ALFRESCO_OAUTH2_ACCESS_TOKEN'),
+            'refresh_token': os.getenv('ALFRESCO_OAUTH2_REFRESH_TOKEN'),
+        },
     }
+
+
+def _build_auth_util(config: dict):
+    """Build a python-alfresco-api auth util for the configured auth_method.
+
+    Returns None for basic auth (ClientFactory builds its own from username/password).
+    - ticket: TicketAuthUtil self-fetches an Alfresco login ticket (Authorization: Basic base64(ticket)).
+    - oauth2: OAuth2AuthUtil (client_credentials/refresh, or a pre-obtained access_token → Bearer),
+      e.g. against Alfresco Identity Service / Keycloak.
+    """
+    method = config.get('auth_method', 'basic')
+    if method == 'ticket':
+        from python_alfresco_api.auth_util import TicketAuthUtil
+        logger.info(">> Using Alfresco ticket authentication")
+        return TicketAuthUtil(
+            config['username'], config['password'],
+            base_url=config['alfresco_url'],
+            verify_ssl=config['verify_ssl'], timeout=config['timeout'],
+        )
+    if method == 'oauth2':
+        from python_alfresco_api.auth_util import OAuth2AuthUtil
+        o = config.get('oauth2', {}) or {}
+        logger.info(">> Using Alfresco OAuth2 (Bearer) authentication")
+        return OAuth2AuthUtil(
+            base_url=config['alfresco_url'],
+            client_id=o.get('client_id', ''),
+            client_secret=o.get('client_secret'),
+            token_endpoint=o.get('token_endpoint'),
+            grant_type=o.get('grant_type', 'client_credentials'),
+            scope=o.get('scope'),
+            access_token=o.get('access_token'),
+            refresh_token=o.get('refresh_token'),
+            verify_ssl=config['verify_ssl'], timeout=config['timeout'],
+            load_env=False,
+        )
+    return None  # basic
 
 
 async def ensure_connection():
@@ -35,16 +81,25 @@ async def ensure_connection():
             
             config = get_alfresco_config()
             
-            logger.info(">> Creating Alfresco clients...")
-            
-            # Use ClientFactory to create authenticated client (original Sunday pattern)
-            factory = ClientFactory(
-                base_url=config['alfresco_url'],
-                username=config['username'],
-                password=config['password'],
-                verify_ssl=config['verify_ssl'],
-                timeout=config['timeout']
-            )
+            logger.info(f">> Creating Alfresco clients (auth_method={config['auth_method']})...")
+
+            # Build the auth util for the configured method; basic -> None (factory uses user/pass).
+            auth_util = _build_auth_util(config)
+            if auth_util is not None:
+                factory = ClientFactory(
+                    base_url=config['alfresco_url'],
+                    auth_util=auth_util,
+                    verify_ssl=config['verify_ssl'],
+                    timeout=config['timeout']
+                )
+            else:
+                factory = ClientFactory(
+                    base_url=config['alfresco_url'],
+                    username=config['username'],
+                    password=config['password'],
+                    verify_ssl=config['verify_ssl'],
+                    timeout=config['timeout']
+                )
             
             # Store the factory globally for other functions to use
             _client_factory = factory

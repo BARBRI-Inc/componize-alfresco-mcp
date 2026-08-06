@@ -153,9 +153,14 @@ async def checkout_document_impl(
                 checkout_dir = downloads_dir / "checkout"
                 checkout_dir.mkdir(parents=True, exist_ok=True)
                 
-                # Create unique filename with node ID
+                # Unique name: insert node ID before extension so editors keep the real type
+                # e.g. cmispress.txt -> cmispress_dab02947-....txt (not cmispress.txt_<id>)
                 safe_filename = filename.replace(" ", "_").replace("/", "_").replace("\\", "_")
-                local_filename = f"{safe_filename}_{clean_node_id}"
+                name_path = pathlib.Path(safe_filename)
+                if name_path.suffix:
+                    local_filename = f"{name_path.stem}_{clean_node_id}{name_path.suffix}"
+                else:
+                    local_filename = f"{safe_filename}_{clean_node_id}"
                 local_path = checkout_dir / local_filename
                 
                 with open(local_path, 'wb') as f:

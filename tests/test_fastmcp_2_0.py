@@ -1,5 +1,5 @@
 """
-Comprehensive FastMCP 2.0 tests for Python Alfresco MCP Server.
+Comprehensive FastMCP tests for Python Alfresco MCP Server.
 Tests the complete MCP server functionality using FastMCP patterns.
 """
 import pytest
@@ -162,8 +162,8 @@ class TestAlfrescoMCPServer:
                 assert "error" in str(e).lower() or "unknown" in str(e).lower()
 
 
-class TestFastMCP2Features:
-    """Test FastMCP 2.0 specific features."""
+class TestFastMCPFeatures:
+    """Test FastMCP specific features."""
     
     @pytest.mark.asyncio
     async def test_concurrent_operations(self):

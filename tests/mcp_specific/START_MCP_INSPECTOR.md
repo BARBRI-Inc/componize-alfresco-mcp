@@ -8,7 +8,7 @@
 python -m alfresco_mcp_server.fastmcp_server --transport http --port 8003
 
 # 2. Start MCP Inspector with pre-configured server
-npx @modelcontextprotocol/inspector --config mcp-inspector-http-config.json --server python-alfresco-mcp-server
+npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-http-uv-config.json --server python-alfresco-mcp-server
 ```
 
 **Expected Output:**

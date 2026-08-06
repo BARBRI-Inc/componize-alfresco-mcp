@@ -22,7 +22,7 @@ The Alfresco MCP Server provides 15 tools for document management, 1 repository 
 | [`browse_repository`](#browse_repository) | Browse repository folders | node_id | Folder contents |
 | [`repository_info`](#repository_info) | Get repository information | None | Repository status/info |
 | [`upload_document`](#upload_document) | Upload new document | filename, content_base64, parent_id | Upload status |
-| [`download_document`](#download_document) | Download document content | node_id, save_to_disk | Base64 encoded content |
+| [`download_document`](#download_document) | Download document content | node_id, save_to_disk, attachment, destination_dir | File path or base64 content |
 | [`create_folder`](#create_folder) | Create new folder | folder_name, parent_id, description | Creation status |
 | [`get_node_properties`](#get_node_properties) | Get node metadata | node_id | Properties object |
 | [`update_node_properties`](#update_node_properties) | Update metadata | node_id, name, title, description, author | Update status |
@@ -283,38 +283,40 @@ result = await client.call_tool("upload_document", {
 
 ### `download_document`
 
-Download the content of a document from the repository.
+Download the content of a document from the repository. By default saves to disk under `~/Downloads` (organized by content type). Optionally return base64 instead, or choose a custom destination folder.
 
 **Parameters:**
 ```json
 {
-  "node_id": "string"   // Document node ID (required)
+  "node_id": "string",              // Document node ID (required)
+  "save_to_disk": true,             // Save to disk (default: true). If false, returns base64 content
+  "attachment": true,               // Download as attachment (default: true)
+  "destination_dir": "string"       // Optional custom folder; default ~/Downloads when omitted
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "nodeId": "abc123-def456-ghi789",
-  "filename": "document.pdf",
-  "mimeType": "application/pdf",
-  "size": 1024,
-  "content_base64": "JVBERi0xLjQKJ..."
-}
-```
+**Response (save_to_disk=true):** text confirmation including saved path and directory.
+
+**Response (save_to_disk=false):** text summary with truncated base64 content for debugging.
 
 **Example:**
 ```python
-# Download document
+# Download to default ~/Downloads (organized by content type)
 result = await client.call_tool("download_document", {
     "node_id": "abc123-def456-ghi789"
 })
 
-# Decode content
-import base64
-content = base64.b64decode(result.content_base64).decode()
-print(content)
+# Download to a custom folder
+result = await client.call_tool("download_document", {
+    "node_id": "abc123-def456-ghi789",
+    "destination_dir": "C:/temp/alfresco-downloads"
+})
+
+# Return base64 instead of writing a file
+result = await client.call_tool("download_document", {
+    "node_id": "abc123-def456-ghi789",
+    "save_to_disk": False
+})
 ```
 
 ## 🔄 Version Control
@@ -772,4 +774,4 @@ tool_result = await client.call_tool("repository_info", {})
 
 ---
 
-**📝 Note**: This API reference covers version 1.1.0 of the Alfresco MCP Server. This release includes all 15 tools with FastMCP 2.0 implementation. 
+**📝 Note**: This API reference covers version 1.2.0 of the Alfresco MCP Server (FastMCP 3). 

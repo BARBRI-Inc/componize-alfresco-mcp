@@ -1,8 +1,9 @@
 """
-MCP Server for Alfresco using FastMCP 2.0
+MCP Server for Alfresco using FastMCP 3
 Modular implementation with separated concerns and self-contained tools
 """
 import logging
+import os
 from fastmcp import FastMCP, Context
 
 # Search tools imports
@@ -40,8 +41,37 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-# Initialize MCP server
-mcp = FastMCP("MCP Server for Alfresco Content Services")
+def _build_transport_auth():
+    """Optionally secure the MCP transport itself with OAuth2/JWT bearer validation.
+
+    Enabled by env MCP_TRANSPORT_AUTH=true (applies to HTTP/SSE transports only; stdio ignores
+    it). Validates RS256 bearer tokens from an OIDC IdP (e.g. Keycloak) via its JWKS; a client
+    (including MCP Inspector) must send `Authorization: Bearer <token>`. Defaults target the local
+    Keycloak realm used for Alfresco identity-service.
+
+    NOTE: this is a DISTINCT layer from how the server authenticates TO Alfresco
+    (ALFRESCO_AUTH_METHOD / ALFRESCO_OAUTH2_*) — this one gates who may call the MCP server.
+    """
+    if os.getenv("MCP_TRANSPORT_AUTH", "false").strip().lower() not in ("1", "true", "yes", "on"):
+        return None
+    from fastmcp.server.auth.providers.jwt import JWTVerifier
+    jwks_uri = os.getenv(
+        "MCP_AUTH_JWKS_URI",
+        "http://host.docker.internal:8091/realms/alfresco/protocol/openid-connect/certs",
+    )
+    # The MCP SDK enforces HTTPS for the issuer URL (localhost/127.0.0.1 excepted). Our local
+    # Keycloak issues an http://host.docker.internal issuer, which the SDK rejects — so by default
+    # we leave issuer unset (token signature is still verified against the JWKS, so only genuine
+    # Keycloak-signed tokens pass; the iss claim just isn't additionally checked). With an HTTPS
+    # IdP in production, set MCP_AUTH_ISSUER to enable strict issuer validation.
+    issuer = os.getenv("MCP_AUTH_ISSUER") or None
+    audience = os.getenv("MCP_AUTH_AUDIENCE") or None  # unset = don't validate aud
+    logger.info(f">> MCP transport auth ENABLED (jwks_uri={jwks_uri}, issuer={issuer}, audience={audience})")
+    return JWTVerifier(jwks_uri=jwks_uri, issuer=issuer, audience=audience)
+
+
+# Initialize MCP server (optionally with transport-level OAuth2/JWT bearer auth)
+mcp = FastMCP("MCP Server for Alfresco Content Services", auth=_build_transport_auth())
 
 # ================== SEARCH TOOLS ==================
 
@@ -113,7 +143,7 @@ async def download_document(
     node_id: str,
     save_to_disk: bool = True,
     attachment: bool = True,
-    destination_dir: str = None,
+    destination_dir: str | None = None,
     ctx: Context = None
 ) -> str:
     """Download a document from Alfresco repository.
@@ -122,7 +152,7 @@ async def download_document(
         node_id: The Alfresco node ID to download
         save_to_disk: Save file to disk (default: True)
         attachment: Download as attachment (default: True)
-        destination_dir: Custom destination folder (default: ~/Downloads)
+        destination_dir: Optional custom destination folder (default: ~/Downloads)
     """
     return await download_document_impl(node_id, save_to_disk, attachment, destination_dir, ctx)
 
@@ -216,10 +246,12 @@ async def search_and_analyze(query: str, analysis_type: str = "summary") -> str:
 # ================== MAIN ENTRY POINT ==================
 
 def main():
-    """Main entry point for the FastMCP 2.0 Alfresco server."""
+    """Main entry point for the FastMCP 3 Alfresco server."""
     import argparse
     
-    parser = argparse.ArgumentParser(description="MCP Server for Alfresco 1.1.0")
+    parser = argparse.ArgumentParser(
+        description="MCP Server for Alfresco using python-alfresco-api"
+    )
     parser.add_argument(
         "--transport",
         choices=["stdio", "http", "sse"],

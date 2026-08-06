@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.2.0] - 2026-08-05
+
+### Added
+- **Alfresco auth methods** (`ALFRESCO_AUTH_METHOD` = `basic` | `ticket` | `oauth2`): the server can now authenticate to Alfresco via HTTP Basic, a login ticket, or an OAuth2/OIDC bearer token (Alfresco `identity-service`), via `python-alfresco-api` 1.2.1+ `OAuth2AuthUtil`, configured with `ALFRESCO_OAUTH2_*` env vars. Documents the setup in the README **Authentication** section (addresses #2). Live-tested basic/ticket/oauth2 end-to-end.
+- **Optional MCP transport authentication** (`MCP_TRANSPORT_AUTH=true`): secures the MCP server itself — HTTP/SSE callers must present an OAuth2 bearer token, validated against an OIDC IdP's JWKS (FastMCP JWT verifier). Off by default; stdio unaffected. Env: `MCP_AUTH_JWKS_URI` / `MCP_AUTH_ISSUER` / `MCP_AUTH_AUDIENCE`.
+- **`download_document` `destination_dir`**: optional custom download folder (default `~/Downloads`). Thanks [@jeremie-lesage](https://github.com/jeremie-lesage) ([#1](https://github.com/stevereiner/python-alfresco-mcp-server/pull/1)).
+
+### Changed
+- **Version 1.2.0** of this package; requires **python-alfresco-api >= 1.2.1** (OAuth2/OIDC auth, `VersionsClient` fix, and OAuth2 service-account `displayName` handling — see below).
+- **Config layout**: moved Claude Desktop sample configs into [`claude-desktop-configs/`](./claude-desktop-configs/) and MCP Inspector samples into [`mcp-inspector-configs/`](./mcp-inspector-configs/); docs and README updated accordingly.
+- **FastMCP 3 upgrade**: bumped dependency from FastMCP 2.x to `fastmcp>=3.4.5,<4`. Server code is compatible with FastMCP 3's API (`list_tools()` / `list_resources()` / `list_prompts()`); JWT transport auth now uses `JWTVerifier` directly. See [FastMCP 2 → 3 upgrade guide](https://gofastmcp.com/getting-started/upgrading/from-fastmcp-2).
+- **Packaging**: switched build backend from setuptools to hatchling (same as python-alfresco-api) for quieter `uv build` output.
+
+### Fixed
+- **checkout_document**: local download filename puts the node ID before the extension (`name_<nodeId>.txt`) instead of after it (`name.txt_<nodeId>`), so editors keep the correct file type.
+- **OAuth2 service-account nodes** (via **python-alfresco-api 1.2.1**): Keycloak client-credentials authenticates as a JIT Alfresco user with no display name, so Alfresco returns `createdByUser` / `modifiedByUser` / `owner` without `displayName` and the generated `UserInfo.from_dict` raised `KeyError('displayName')` (breaking `download_document` and other `nodes.get` tools). Fixed upstream with a runtime shim (`python_alfresco_api/_compat.py`, applied at package import) that defaults missing `displayName` to `id` for core and search `UserInfo` — outside `raw_clients/` so it survives client re-generation. Basic/ticket and user-based OAuth2 tokens were unaffected.
+
 ## [1.1.0] - 2025-01-25
 
 ### Alfresco_MCP_Server dir code changes for v1.1

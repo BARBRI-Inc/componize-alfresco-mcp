@@ -22,17 +22,17 @@ async def download_document_impl(
     node_id: str,
     save_to_disk: bool = True,
     attachment: bool = True,
-    destination_dir: str = None,
+    destination_dir: Optional[str] = None,
     ctx: Optional[Context] = None
 ) -> str:
     """Download a document from Alfresco repository.
 
     Args:
         node_id: Node ID of the document to download
-        save_to_disk: If True, saves file to Downloads folder (default, AI-friendly).
+        save_to_disk: If True, saves file to disk (default, AI-friendly).
                      If False, returns base64 content (testing/debugging)
         attachment: If True, downloads as attachment (default). If False, opens for preview in browser
-        destination_dir: Custom destination folder (default: ~/Downloads)
+        destination_dir: Optional custom destination folder. Defaults to ~/Downloads when omitted or empty.
         ctx: MCP context for progress reporting
 
     Returns:
@@ -129,8 +129,8 @@ async def download_document_impl(
             # AI-Client friendly: Save file to Downloads folder with content-aware handling
 
             # Use custom destination or default to ~/Downloads
-            if destination_dir:
-                downloads_dir = pathlib.Path(destination_dir)
+            if destination_dir and destination_dir.strip():
+                downloads_dir = pathlib.Path(destination_dir.strip()).expanduser()
                 downloads_dir.mkdir(parents=True, exist_ok=True)
             else:
                 downloads_dir = pathlib.Path.home() / "Downloads"

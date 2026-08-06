@@ -36,9 +36,9 @@ python -m alfresco_mcp_server.fastmcp_server --transport http --port 8003
 
 #### Step 2: Start MCP Inspector
 
-Use the included configuration file:
+Use an included configuration file from [`mcp-inspector-configs/`](../mcp-inspector-configs/):
 ```bash
-npx @modelcontextprotocol/inspector --config mcp-inspector-http-config.json --server python-alfresco-mcp-server
+npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-http-uv-config.json --server python-alfresco-mcp-server
 ```
 
 #### Step 3: Open Browser
@@ -65,10 +65,10 @@ npx @modelcontextprotocol/inspector
 
 ## 📋 Configuration Files
 
-The project includes pre-configured files for easy setup:
+Sample configs live in [`mcp-inspector-configs/`](../mcp-inspector-configs/) (uv, uvx, and pipx variants).
 
 ### HTTP Transport Configuration
-**File**: `mcp-inspector-http-config.json`
+**File**: `mcp-inspector-configs/mcp-inspector-http-uv-config.json`
 ```json
 {
   "servers": {
@@ -86,7 +86,7 @@ The project includes pre-configured files for easy setup:
 ```
 
 ### STDIO Transport Configuration  
-**File**: `mcp-inspector-stdio-config.json`
+**File**: `mcp-inspector-configs/mcp-inspector-stdio-uv-config.json`
 ```json
 {
   "servers": {
@@ -119,7 +119,7 @@ Once connected, you can test all tools:
 - **browse_repository**: Browse folders
 - **repository_info**: Get system information
 - **upload_document**: Upload files
-- **download_document**: Download content
+- **download_document**: Download content (`node_id`, optional `destination_dir`, `save_to_disk`, `attachment`)
 - **create_folder**: Create directories
 - **get_node_properties**: View metadata
 - **update_node_properties**: Modify metadata
@@ -297,7 +297,7 @@ See [`prompts-for-claude.md`](../prompts-for-claude.md) for 14 manual test scena
 ## 🎯 Quick Start Summary
 
 1. **Start MCP Server**: `uv run python-alfresco-mcp-server --transport http --port 8003`
-2. **Start Inspector**: `npx @modelcontextprotocol/inspector --config mcp-inspector-http-config.json --server python-alfresco-mcp-server`
+2. **Start Inspector**: `npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-http-uv-config.json --server python-alfresco-mcp-server`
 3. **Open URL**: Use the provided URL with pre-filled token
 4. **Test Tools**: Start with `repository_info` then explore other tools
 

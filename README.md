@@ -9,7 +9,7 @@
 
 A full featured MCP server for Alfresco in search and content management areas. It provides the following tools: full text search (content and properties), advanced search, metadata search, CMIS SQL like search, upload, download,
 checkin, checkout, cancel checkout, create folder, folder browse, delete node, and get/set properties. Also has a  tool for getting repository status/config (also a resource). Has one prompt example.
-Built with [FastMCP 2.0](https://github.com/jlowin/FastMCP). 
+Built with [FastMCP 3](https://github.com/PrefectHQ/fastmcp). 
 Features complete documentation, examples, and 
 config for various MCP clients (Claude Desktop, MCP Inspector, references to configuring others).
 
@@ -22,7 +22,7 @@ config for various MCP clients (Claude Desktop, MCP Inspector, references to con
 - **Enhanced Testing**: Complete test suite transformation - 143 tests with 100% pass rate
 - **Client Configuration Files**: Added dedicated Claude Desktop and MCP Inspector configuration files
 - **Live Integration Testing**: 21 Alfresco server validation tests for real-world functionality
-- **Python-Alfresco-API**:  python-alfresco-mcp-server v1.1  requires the v1.1.1 python-alfresco-api package
+- **Python-Alfresco-API**: python-alfresco-mcp-server v1.2.0 requires python-alfresco-api >= 1.2.1
 
 ## 📚 Complete Documentation
 
@@ -67,12 +67,12 @@ config for various MCP clients (Claude Desktop, MCP Inspector, references to con
 - **Repository Info**: (Tool and Resource) Returns repository status, version and whether Community or Enterprise, and module configuration
 
 ### MCP Architecture
-- **FastMCP 2.0 Framework**: Modern, high-performance MCP server implementation
+- **FastMCP 3 Framework**: Modern, high-performance MCP server implementation
 - **Multiple Transports**: 
   - **STDIO** (direct MCP protocol) - Default and fastest
   - **HTTP** (RESTful API) - Web services and testing
   - **SSE** (Server-Sent Events) - Real-time streaming updates
-- **Enterprise Security**: OAuth 2.1  (optional)
+- **Authentication**: Basic, ticket, or OAuth2/OIDC to Alfresco, plus optional OAuth2 bearer to secure the MCP transport itself — see [Authentication](#-authentication)
 - **Type Safety**: Full Pydantic v2 models
 - **In-Memory Testing**: Client testing with faster execution
 - **Configuration**: Environment variables, .env files
@@ -86,7 +86,7 @@ Works with Alfresco Community (tested) and Enterprise editions
 - Python 3.10+
 - Alfresco Content Services (Community or Enterprise)
 
-> **Note**: The `python-alfresco-api >= 1.1.1` dependency is automatically installed with `python-alfresco-mcp-server`
+> **Note**: The `python-alfresco-api >= 1.2.1` dependency is automatically installed with `python-alfresco-mcp-server`
 
 ## 🛠️ Installation
 
@@ -307,9 +307,9 @@ The Claude Desktop configuration differs based on how you installed the MCP serv
   "args": ["python-alfresco-mcp-server", "--transport", "stdio"]
 }
 ```
-- **Sample Config Files:**
-  - Windows: [`claude-desktop-config-uvx-windows.json`](./claude-desktop-config-uvx-windows.json)
-  - macOS: [`claude-desktop-config-uvx-macos.json`](./claude-desktop-config-uvx-macos.json)
+- **Sample Config Files** (in [`claude-desktop-configs/`](./claude-desktop-configs/)):
+  - Windows: [`claude-desktop-config-uvx-windows.json`](./claude-desktop-configs/claude-desktop-config-uvx-windows.json)
+  - macOS: [`claude-desktop-config-uvx-macos.json`](./claude-desktop-configs/claude-desktop-config-uvx-macos.json)
 - UVX automatically handles isolation and global availability
 - Fastest and most modern approach
 
@@ -321,9 +321,9 @@ The Claude Desktop configuration differs based on how you installed the MCP serv
   "cwd": "C:\\path\\to\\python-alfresco-mcp-server"
 }
 ```
-- **Sample Config Files:**
-  - Windows: [`claude-desktop-config-uv-windows.json`](./claude-desktop-config-uv-windows.json)
-  - macOS: [`claude-desktop-config-uv-macos.json`](./claude-desktop-config-uv-macos.json)
+- **Sample Config Files** (in [`claude-desktop-configs/`](./claude-desktop-configs/)):
+  - Windows: [`claude-desktop-config-uv-windows.json`](./claude-desktop-configs/claude-desktop-config-uv-windows.json)
+  - macOS: [`claude-desktop-config-uv-macos.json`](./claude-desktop-configs/claude-desktop-config-uv-macos.json)
 - Uses `uv run` with `cwd` pointing to your **project directory**
 - UV automatically finds and uses the `.venv` from the project directory
 - Works for both source installations and after `uv tool install`
@@ -331,7 +331,7 @@ The Claude Desktop configuration differs based on how you installed the MCP serv
 **3. Traditional Methods (pipx/pip):**
 
 For traditional installation methods, see the **[Installation with pip and pipx](./docs/install_with_pip_pipx.md)** which covers:
-- **pipx**: [`claude-desktop-config-pipx-windows.json`](./claude-desktop-config-pipx-windows.json) / [`claude-desktop-config-pipx-macos.json`](./claude-desktop-config-pipx-macos.json)
+- **pipx**: [`claude-desktop-config-pipx-windows.json`](./claude-desktop-configs/claude-desktop-config-pipx-windows.json) / [`claude-desktop-config-pipx-macos.json`](./claude-desktop-configs/claude-desktop-config-pipx-macos.json)
 - **pip**: Manual venv path configuration
 
 **🔐 Tool-by-Tool Permission System:**
@@ -422,20 +422,20 @@ This tool-by-tool security feature ensures you maintain granular control over wh
 
 **2. Start MCP Inspector with config:**
 
-   **UVX Installation (Recommended):**
+   **UVX Installation (Recommended)** — configs in [`mcp-inspector-configs/`](./mcp-inspector-configs/):
    ```bash
    # Start with stdio transport
-   npx @modelcontextprotocol/inspector --config mcp-inspector-stdio-uvx-config.json --server python-alfresco-mcp-server
+   npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-stdio-uvx-config.json --server python-alfresco-mcp-server
 
    # Start with http transport  
-   npx @modelcontextprotocol/inspector --config mcp-inspector-http-uvx-config.json --server python-alfresco-mcp-server
+   npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-http-uvx-config.json --server python-alfresco-mcp-server
    ```
 
    **UV Installation (Development):**
    ```bash
-   # From project directory where config files exist
-   npx @modelcontextprotocol/inspector --config mcp-inspector-stdio-uv-config.json --server python-alfresco-mcp-server  # stdio transport
-   npx @modelcontextprotocol/inspector --config mcp-inspector-http-uv-config.json --server python-alfresco-mcp-server   # http transport
+   # From project directory
+   npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-stdio-uv-config.json --server python-alfresco-mcp-server  # stdio transport
+   npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-http-uv-config.json --server python-alfresco-mcp-server   # http transport
    ```
 
    **Traditional Methods (pipx/pip):**
@@ -474,7 +474,7 @@ For Cursor, Claude Code, and other MCP clients:
 | `browse_repository` | Browse repository folders | `node_id` (str) |
 | `repository_info` | Get repository information | None |
 | `upload_document` | Upload new document | `filename` (str), `content_base64` (str), `parent_id` (str), `description` (str) |
-| `download_document` | Download document content | `node_id` (str), `save_to_disk` (bool) |
+| `download_document` | Download document content | `node_id` (str), `save_to_disk` (bool), `attachment` (bool), `destination_dir` (str, optional) |
 | `create_folder` | Create new folder | `folder_name` (str), `parent_id` (str), `description` (str) |
 | `get_node_properties` | Get node metadata | `node_id` (str) |
 | `update_node_properties` | Update node metadata | `node_id` (str), `name` (str), `title` (str), `description` (str), `author` (str) |
@@ -516,17 +516,123 @@ The Search and Analyze Prompt provides:
 
 📖 **See [API Reference](./docs/api_reference.md) for detailed prompt documentation**
 
+## 🔐 Authentication
+
+Set `ALFRESCO_AUTH_METHOD` to one of **`basic`** (default), **`ticket`**, or **`oauth2`**. All three
+are handled by the [`python-alfresco-api`](https://github.com/stevereiner/python-alfresco-api) auth
+utilities and passed to `ClientFactory`.
+
+**Basic** — HTTP Basic with username/password (simplest; fine for local/testing over HTTPS):
+```env
+ALFRESCO_AUTH_METHOD=basic
+ALFRESCO_USERNAME=admin
+ALFRESCO_PASSWORD=admin
+```
+
+**Ticket** — logs in once to `/authentication/versions/1/tickets`, then sends the ticket as
+`Authorization: Basic base64(<ticket>)` so the password isn't transmitted on every request (the
+ticket can expire/be revoked):
+```env
+ALFRESCO_AUTH_METHOD=ticket
+ALFRESCO_USERNAME=admin
+ALFRESCO_PASSWORD=admin
+```
+
+**OAuth2 (Bearer / OIDC)** — presents a Bearer token to Alfresco's REST API. **Requires Alfresco's
+built-in `identity-service` subsystem configured against an OIDC IdP (e.g. Keycloak / Alfresco
+Identity Service).** Alfresco Community 23.2+ ships this subsystem — it's config-only in
+`alfresco-global.properties` (no Acosix/AMP needed). Two modes:
+
+*client_credentials* (service account — the MCP server fetches + refreshes the token):
+```env
+ALFRESCO_AUTH_METHOD=oauth2
+ALFRESCO_OAUTH2_CLIENT_ID=<client-id>
+ALFRESCO_OAUTH2_CLIENT_SECRET=<client-secret>
+ALFRESCO_OAUTH2_TOKEN_ENDPOINT=https://<keycloak>/realms/<realm>/protocol/openid-connect/token
+ALFRESCO_OAUTH2_GRANT_TYPE=client_credentials
+```
+
+*pre-obtained token* (e.g. a specific user's token — content access follows that user's ACLs):
+```env
+ALFRESCO_AUTH_METHOD=oauth2
+ALFRESCO_OAUTH2_CLIENT_ID=<client-id>
+ALFRESCO_OAUTH2_ACCESS_TOKEN=<access-token>
+ALFRESCO_OAUTH2_REFRESH_TOKEN=<refresh-token>   # optional; enables auto-refresh
+```
+
+> ⚠️ **Prefer a user token for content operations.** `client_credentials` authenticates as the
+> Keycloak *service account* (e.g. `service-account-<client-id>`) — a JIT Alfresco user with **no
+> display name** and only default ACLs. Alfresco then returns `createdByUser`/`modifiedByUser`
+> without the (spec-required) `displayName`, which can break clients that parse node responses. For
+> real content work, use the **pre-obtained token** mode above with a *user's* token — obtain one
+> with a password grant and paste it into `ALFRESCO_OAUTH2_ACCESS_TOKEN`/`ALFRESCO_OAUTH2_REFRESH_TOKEN`:
+> ```bash
+> curl -X POST <token-endpoint> \
+>   -d grant_type=password -d client_id=<id> -d client_secret=<secret> \
+>   -d username=admin -d password=admin
+> ```
+> That way responses carry the real display name and the user's actual permissions. (As of
+> python-alfresco-api ≥ 1.2.x the client also defaults a missing `displayName` to the user id, so the
+> service-account path no longer crashes — but a user token still gives correct names and ACLs.)
+
+> Note: this is **data-source** auth (how the MCP server authenticates *to Alfresco*), separate from
+> securing the MCP transport itself. On the Alfresco side, configure `identity-service` (see the
+> Alfresco docs for `identity-service.auth-server-url` / `.realm` / `.resource` / `.credentials.secret`);
+> `client_credentials` authenticates as the service account, while a user's token scopes to that user.
+
+### Securing the MCP transport (OAuth2 bearer)
+
+Separately from data-source auth, you can require **callers of the MCP server** to present an OAuth2
+bearer token. This uses FastMCP's JWT verifier and applies to the **HTTP/SSE** transports only
+(stdio ignores it). Set `MCP_TRANSPORT_AUTH=true`; RS256 tokens are validated against your OIDC IdP's
+JWKS, so only genuine IdP-signed tokens are accepted:
+
+```env
+MCP_TRANSPORT_AUTH=true
+MCP_AUTH_JWKS_URI=http://host.docker.internal:8091/realms/alfresco/protocol/openid-connect/certs
+# MCP_AUTH_ISSUER=https://<your-idp>/realms/<realm>   # optional; the MCP SDK requires HTTPS here
+# MCP_AUTH_AUDIENCE=<aud>                              # optional
+```
+
+Run it and the endpoint rejects unauthenticated calls:
+
+```bash
+MCP_TRANSPORT_AUTH=true python -m alfresco_mcp_server.fastmcp_server --transport http --port 8009
+# no token           -> 401
+# Authorization: Bearer <valid-keycloak-token>  -> 200
+```
+
+**MCP Inspector:** run the HTTP inspector config, set the server URL to `http://localhost:8009/mcp/`,
+and add an `Authorization: Bearer <token>` header (obtain the token out-of-band from your IdP — e.g.
+`curl -X POST .../token -d grant_type=client_credentials -d client_id=... -d client_secret=...`).
+Clients must acquire the token themselves; FastMCP validates it but does not issue tokens.
+
+> The MCP SDK requires the issuer URL to be **HTTPS** (localhost excepted). With a local http Keycloak,
+> leave `MCP_AUTH_ISSUER` unset — the JWKS signature check still gates access; add a strict issuer in
+> production behind HTTPS.
+
 ## 🔧 Configuration Options
 
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
 | `ALFRESCO_URL` | `http://localhost:8080` | Alfresco server URL |
-| `ALFRESCO_USERNAME` | `admin` | Username for authentication |
-| `ALFRESCO_PASSWORD` | `admin` | Password for authentication |
+| `ALFRESCO_AUTH_METHOD` | `basic` | Auth method: `basic` \| `ticket` \| `oauth2` (see [Authentication](#-authentication)) |
+| `ALFRESCO_USERNAME` | `admin` | Username (basic/ticket) |
+| `ALFRESCO_PASSWORD` | `admin` | Password (basic/ticket) |
+| `ALFRESCO_OAUTH2_CLIENT_ID` | – | OAuth2 client id (oauth2) |
+| `ALFRESCO_OAUTH2_CLIENT_SECRET` | – | OAuth2 client secret (oauth2) |
+| `ALFRESCO_OAUTH2_TOKEN_ENDPOINT` | – | OAuth2 token endpoint (oauth2) |
+| `ALFRESCO_OAUTH2_GRANT_TYPE` | `client_credentials` | `client_credentials` \| `refresh_token` |
+| `ALFRESCO_OAUTH2_ACCESS_TOKEN` | – | Pre-obtained access token (optional, oauth2) |
+| `ALFRESCO_OAUTH2_REFRESH_TOKEN` | – | Refresh token (optional, oauth2) |
 | `ALFRESCO_VERIFY_SSL` | `false` | Verify SSL certificates |
 | `ALFRESCO_TIMEOUT` | `30` | Request timeout (seconds) |
 | `FASTAPI_HOST` | `localhost` | FastAPI host |
 | `FASTAPI_PORT` | `8000` | FastAPI port |
+| `MCP_TRANSPORT_AUTH` | `false` | Require OAuth2 bearer to call the MCP server (HTTP/SSE only) — see [Securing the MCP transport](#securing-the-mcp-transport-oauth2-bearer) |
+| `MCP_AUTH_JWKS_URI` | Keycloak certs | IdP JWKS endpoint used to validate bearer tokens |
+| `MCP_AUTH_ISSUER` | – | Optional strict issuer check (must be HTTPS) |
+| `MCP_AUTH_AUDIENCE` | – | Optional audience check |
 | `LOG_LEVEL` | `INFO` | Logging level |
 | `MAX_FILE_SIZE` | `100000000` | Max upload size (bytes) |
 
@@ -652,7 +758,7 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 
 - **[Hyland Alfresco](https://www.hyland.com/en/solutions/products/alfresco-platform)** - Content management platform (Enterprise and Community editions)
 - **[python-alfresco-api](https://github.com/stevereiner/python-alfresco-api)** - The underlying Alfresco API library
-- **[FastMCP 2.0](https://github.com/jlowin/FastMCP)** - Modern framework for building MCP servers
+- **[FastMCP 3](https://github.com/PrefectHQ/fastmcp)** - Modern framework for building MCP servers
 - **[FastMCP Documentation](https://gofastmcp.com/)** - Complete FastMCP framework documentation and guides
 - **[Model Context Protocol](https://modelcontextprotocol.io)** - Official MCP specification and documentation
 - **[Playbooks.com MCP List](https://playbooks.com/mcp/stevereiner-alfresco-content-services)** - Python Alfresco MCP Server listing

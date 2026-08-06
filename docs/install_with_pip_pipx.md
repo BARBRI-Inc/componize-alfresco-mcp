@@ -87,9 +87,9 @@ The Claude Desktop configuration differs based on how you installed the MCP serv
 - pipx makes tools globally available in your PATH
 - Simplest configuration
 
-**Sample Config Files:**
-- Windows: [`claude-desktop-config-pipx-windows.json`](../claude-desktop-config-pipx-windows.json)
-- macOS: [`claude-desktop-config-pipx-macos.json`](../claude-desktop-config-pipx-macos.json)
+**Sample Config Files** (in [`claude-desktop-configs/`](../claude-desktop-configs/)):
+- Windows: [`claude-desktop-config-pipx-windows.json`](../claude-desktop-configs/claude-desktop-config-pipx-windows.json)
+- macOS: [`claude-desktop-config-pipx-macos.json`](../claude-desktop-configs/claude-desktop-config-pipx-macos.json)
 
 ### pip Installation (Manual venv)
 
@@ -110,16 +110,16 @@ For development and testing with MCP Inspector:
 
 ### pipx Installation
 
-Use the sample config files:
-- **stdio transport**: [`mcp-inspector-stdio-pipx-config.json`](../mcp-inspector-stdio-pipx-config.json)
-- **http transport**: [`mcp-inspector-http-pipx-config.json`](../mcp-inspector-http-pipx-config.json)
+Use the sample config files in [`mcp-inspector-configs/`](../mcp-inspector-configs/):
+- **stdio transport**: [`mcp-inspector-stdio-pipx-config.json`](../mcp-inspector-configs/mcp-inspector-stdio-pipx-config.json)
+- **http transport**: [`mcp-inspector-http-pipx-config.json`](../mcp-inspector-configs/mcp-inspector-http-pipx-config.json)
 
 ```bash
 # Start with stdio transport
-npx @modelcontextprotocol/inspector --config mcp-inspector-stdio-pipx-config.json --server python-alfresco-mcp-server
+npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-stdio-pipx-config.json --server python-alfresco-mcp-server
 
 # Start with http transport  
-npx @modelcontextprotocol/inspector --config mcp-inspector-http-pipx-config.json --server python-alfresco-mcp-server
+npx @modelcontextprotocol/inspector --config mcp-inspector-configs/mcp-inspector-http-pipx-config.json --server python-alfresco-mcp-server
 ```
 
 ### pip Installation

@@ -4,8 +4,27 @@
 
 # === REQUIRED: Alfresco Connection ===
 ALFRESCO_URL=http://localhost:8080
+
+# === Authentication ===
+# ALFRESCO_AUTH_METHOD: basic | ticket | oauth2   (default: basic)
+#   basic  = HTTP Basic (username/password below)
+#   ticket = Alfresco login ticket (username/password below; a ticket is fetched and used
+#            as Authorization: Basic base64(ticket) — password isn't sent on every request)
+#   oauth2 = OIDC Bearer token via Alfresco Identity Service / Keycloak (see OAuth2 block)
+ALFRESCO_AUTH_METHOD=basic
 ALFRESCO_USERNAME=admin
 ALFRESCO_PASSWORD=admin
+
+# === OPTIONAL: OAuth2 (only when ALFRESCO_AUTH_METHOD=oauth2) ===
+# Requires Alfresco's identity-service subsystem configured against an OIDC IdP (Keycloak).
+# Either client_credentials (client id+secret+token endpoint) OR a pre-obtained access token.
+#ALFRESCO_OAUTH2_CLIENT_ID=flexible-graphrag
+#ALFRESCO_OAUTH2_CLIENT_SECRET=flexible-graphrag-secret
+#ALFRESCO_OAUTH2_TOKEN_ENDPOINT=http://localhost:8091/realms/alfresco/protocol/openid-connect/token
+#ALFRESCO_OAUTH2_GRANT_TYPE=client_credentials
+#ALFRESCO_OAUTH2_SCOPE=
+#ALFRESCO_OAUTH2_ACCESS_TOKEN=
+#ALFRESCO_OAUTH2_REFRESH_TOKEN=
 
 # === OPTIONAL: Connection Settings ===
 ALFRESCO_VERIFY_SSL=false
@@ -18,6 +37,19 @@ MAX_FILE_SIZE=100000000
 # === OPTIONAL: HTTP Transport Settings ===
 FASTAPI_HOST=localhost
 FASTAPI_PORT=8000
+
+# === OPTIONAL: MCP Transport Authentication (secures the MCP server itself) ===
+# Distinct from ALFRESCO_AUTH_METHOD (which is how the server authenticates TO Alfresco).
+# When enabled, HTTP/SSE clients (incl. MCP Inspector) must send Authorization: Bearer <token>.
+# stdio transport ignores this. RS256 bearer tokens are validated against the IdP's JWKS.
+MCP_TRANSPORT_AUTH=false
+# JWKS endpoint of your OIDC IdP (default = local Keycloak realm used for Alfresco identity-service)
+#MCP_AUTH_JWKS_URI=http://host.docker.internal:8091/realms/alfresco/protocol/openid-connect/certs
+# Optional strict issuer check. NOTE: the MCP SDK requires an HTTPS issuer URL (localhost excepted),
+# so leave unset for a local http Keycloak — the JWKS signature check still gates access.
+#MCP_AUTH_ISSUER=https://<your-idp>/realms/<realm>
+# Optional audience check (unset = don't validate aud)
+#MCP_AUTH_AUDIENCE=
 
 # === NOTES ===
 # - Environment variables take precedence over defaults

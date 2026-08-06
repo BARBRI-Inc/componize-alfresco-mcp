@@ -29,7 +29,7 @@ pipx install python-alfresco-mcp-server
 
 **Configuration:**
 
-**Windows** (use [claude-desktop-config-user-windows.json](../claude-desktop-config-user-windows.json)):
+**Windows** (use [claude-desktop-config-pipx-windows.json](../claude-desktop-configs/claude-desktop-config-pipx-windows.json)):
 ```json
 {
   "mcpServers": {
@@ -48,7 +48,7 @@ pipx install python-alfresco-mcp-server
 }
 ```
 
-**macOS** (use [claude-desktop-config-user-macos.json](../claude-desktop-config-user-macos.json)):
+**macOS** (use [claude-desktop-config-pipx-macos.json](../claude-desktop-configs/claude-desktop-config-pipx-macos.json)):
 ```json
 {
   "mcpServers": {
@@ -174,7 +174,7 @@ For developers using the source code repository:
 
 Use the included configuration files:
 
-**Windows** (use [claude-desktop-config-developer-windows.json](../claude-desktop-config-developer-windows.json)):
+**Windows** (use [claude-desktop-config-uv-windows.json](../claude-desktop-configs/claude-desktop-config-uv-windows.json)):
 ```json
 {
   "mcpServers": {
@@ -194,7 +194,7 @@ Use the included configuration files:
 }
 ```
 
-**macOS** (use [claude-desktop-config-developer-macos.json](../claude-desktop-config-developer-macos.json)):
+**macOS** (use [claude-desktop-config-uv-macos.json](../claude-desktop-configs/claude-desktop-config-uv-macos.json)):
 ```json
 {
   "mcpServers": {

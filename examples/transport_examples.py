@@ -16,7 +16,7 @@ import asyncio
 import subprocess
 import time
 import httpx
-from fastmcp import Client, StdioServerTransport, HttpServerTransport, SseServerTransport
+from fastmcp import Client, StreamableHttpTransport, SSETransport
 from alfresco_mcp_server.fastmcp_server import mcp
 
 
@@ -117,7 +117,7 @@ class TransportDemonstrator:
             print("\n2️⃣ Connecting via HTTP transport...")
             
             # Connect using HTTP transport
-            transport = HttpServerTransport("http://127.0.0.1:8002")
+            transport = StreamableHttpTransport("http://127.0.0.1:8002")
             async with Client(transport) as client:
                 print("✅ HTTP connection established!")
                 
@@ -170,7 +170,7 @@ class TransportDemonstrator:
             print("\n2️⃣ Connecting via SSE transport...")
             
             # Connect using SSE transport
-            transport = SseServerTransport("http://127.0.0.1:8003")
+            transport = SSETransport("http://127.0.0.1:8003")
             async with Client(transport) as client:
                 print("✅ SSE connection established!")
                 

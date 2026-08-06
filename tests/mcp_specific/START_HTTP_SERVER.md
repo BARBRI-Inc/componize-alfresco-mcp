@@ -18,7 +18,7 @@ fastmcp run alfresco_mcp_server.fastmcp_server --host localhost --port 8003
 
 ## For Claude Desktop Testing (STDIO)
 Claude Desktop uses the stdio transport via the config file:
-`claude-desktop-config.json`
+`claude-desktop-configs/` samples
 
 ## Testing Server Status
 After starting the HTTP server, run:

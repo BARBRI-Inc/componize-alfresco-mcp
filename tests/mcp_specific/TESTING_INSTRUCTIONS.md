@@ -28,7 +28,7 @@ The error `"Not Acceptable: Client must accept text/event-stream"` is **NORMAL**
 ## 💬 Claude Desktop Testing (Easier)
 
 ### Setup
-1. **Config ready**: `claude-desktop-config.json` ✅
+1. **Config ready**: sample from `claude-desktop-configs/` ✅
 2. **Restart**: Claude Desktop application
 3. **Ready**: MCP tools appear in conversation
 
