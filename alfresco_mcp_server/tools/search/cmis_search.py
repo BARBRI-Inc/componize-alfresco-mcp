@@ -8,6 +8,7 @@ from fastmcp import Context
 
 from ...utils.connection import ensure_connection
 from ...utils.json_utils import safe_format_output
+from ...utils.search_execute import execute_search
 
 logger = logging.getLogger(__name__)
 
@@ -77,94 +78,81 @@ CMIS provides precise SQL queries for exact matching and filtering.
         if ctx:
             await ctx.report_progress(0.3)
         
-        # Use same pattern as other search tools but with CMIS language
+        # Build and run the CMIS search request directly (see utils/search_execute.py
+        # for why this bypasses python_alfresco_api.utils.search_utils)
         try:
-            # Import the SearchRequest model for CMIS queries
             from python_alfresco_api.raw_clients.alfresco_search_client.search_client.models import SearchRequest, RequestQuery, RequestPagination, RequestQueryLanguage
             from python_alfresco_api.raw_clients.alfresco_search_client.search_client.types import UNSET
-            
-            # Create CMIS search request (same pattern as search_utils.simple_search but with CMIS language)
-            request_query = RequestQuery(
-                query=actual_query,
-                language=RequestQueryLanguage.CMIS  # Use CMIS instead of AFTS
-            )
-            
-            request_pagination = RequestPagination(
-                max_items=actual_max_results,
-                skip_count=0
-            )
-            
+
             search_request = SearchRequest(
-                query=request_query,
-                paging=request_pagination,
+                query=RequestQuery(query=actual_query, language=RequestQueryLanguage.CMIS),
+                paging=RequestPagination(max_items=actual_max_results, skip_count=0),
                 include=UNSET
             )
-            
-            # Use same pattern as search_utils.simple_search
-            search_results = search_client.search.search(search_request)
-            
-            if search_results and hasattr(search_results, 'list_'):
-                entries_list = search_results.list_.entries if search_results.list_ else []
-                logger.info(f"Found {len(entries_list)} CMIS search results")
-                
-                if ctx:
-                    await ctx.report_progress(1.0)
-                
-                if not entries_list:
-                    return "0"
-                
-                result_text = f"Found {len(entries_list)} item(s) matching the CMIS query:\n\n"
-                
-                for i, entry in enumerate(entries_list, 1):
-                    # Debug: Log the entry structure
-                    logger.debug(f"Entry {i} type: {type(entry)}, content: {entry}")
-                    
-                    # Handle different possible entry structures
-                    node = None
-                    if isinstance(entry, dict):
-                        if 'entry' in entry:
-                            node = entry['entry']
-                        elif 'name' in entry:  # Direct node structure
-                            node = entry
-                        else:
-                            logger.warning(f"Unknown entry structure: {entry}")
-                            continue
-                    elif hasattr(entry, 'entry'):  # ResultSetRowEntry object
-                        node = entry.entry
+
+            entries_list, error = execute_search(search_client, search_request)
+            if error:
+                logger.error(f"CMIS search failed: {error}")
+                return safe_format_output(f"ERROR: CMIS search failed - {error}")
+
+            logger.info(f"Found {len(entries_list)} CMIS search results")
+
+            if ctx:
+                await ctx.report_progress(1.0)
+
+            if not entries_list:
+                return "0"
+
+            result_text = f"Found {len(entries_list)} item(s) matching the CMIS query:\n\n"
+
+            for i, entry in enumerate(entries_list, 1):
+                # Debug: Log the entry structure
+                logger.debug(f"Entry {i} type: {type(entry)}, content: {entry}")
+
+                # Handle different possible entry structures
+                node = None
+                if isinstance(entry, dict):
+                    if 'entry' in entry:
+                        node = entry['entry']
+                    elif 'name' in entry:  # Direct node structure
+                        node = entry
                     else:
-                        logger.warning(f"Entry is not a dict or ResultSetRowEntry: {type(entry)}")
+                        logger.warning(f"Unknown entry structure: {entry}")
                         continue
-                    
-                    if node:
-                        # Handle both dict and ResultNode objects
-                        if isinstance(node, dict):
-                            name = str(node.get('name', 'Unknown'))
-                            node_id = str(node.get('id', 'Unknown'))
-                            node_type = str(node.get('nodeType', 'Unknown'))
-                            created_at = str(node.get('createdAt', 'Unknown'))
-                        else:
-                            # ResultNode object - access attributes directly
-                            name = str(getattr(node, 'name', 'Unknown'))
-                            node_id = str(getattr(node, 'id', 'Unknown'))
-                            node_type = str(getattr(node, 'node_type', 'Unknown'))
-                            created_at = str(getattr(node, 'created_at', 'Unknown'))
-                        
-                        # Clean JSON-friendly formatting (no markdown syntax)
-                        # Apply safe formatting to individual fields to prevent emoji encoding issues
-                        safe_name = safe_format_output(name)
-                        safe_node_id = safe_format_output(node_id)
-                        safe_node_type = safe_format_output(node_type)
-                        safe_created_at = safe_format_output(created_at)
-                        
-                        result_text += f"{i}. {safe_name}\n"
-                        result_text += f"   - ID: {safe_node_id}\n"
-                        result_text += f"   - Type: {safe_node_type}\n"
-                        result_text += f"   - Created: {safe_created_at}\n\n"
-                
-                return safe_format_output(result_text)
-            else:
-                return safe_format_output(f"ERROR: CMIS search failed - invalid response from Alfresco")
-                
+                elif hasattr(entry, 'entry'):  # ResultSetRowEntry object
+                    node = entry.entry
+                else:
+                    logger.warning(f"Entry is not a dict or ResultSetRowEntry: {type(entry)}")
+                    continue
+
+                if node:
+                    # Handle both dict and ResultNode objects
+                    if isinstance(node, dict):
+                        name = str(node.get('name', 'Unknown'))
+                        node_id = str(node.get('id', 'Unknown'))
+                        node_type = str(node.get('nodeType', 'Unknown'))
+                        created_at = str(node.get('createdAt', 'Unknown'))
+                    else:
+                        # ResultNode object - access attributes directly
+                        name = str(getattr(node, 'name', 'Unknown'))
+                        node_id = str(getattr(node, 'id', 'Unknown'))
+                        node_type = str(getattr(node, 'node_type', 'Unknown'))
+                        created_at = str(getattr(node, 'created_at', 'Unknown'))
+
+                    # Clean JSON-friendly formatting (no markdown syntax)
+                    # Apply safe formatting to individual fields to prevent emoji encoding issues
+                    safe_name = safe_format_output(name)
+                    safe_node_id = safe_format_output(node_id)
+                    safe_node_type = safe_format_output(node_type)
+                    safe_created_at = safe_format_output(created_at)
+
+                    result_text += f"{i}. {safe_name}\n"
+                    result_text += f"   - ID: {safe_node_id}\n"
+                    result_text += f"   - Type: {safe_node_type}\n"
+                    result_text += f"   - Created: {safe_created_at}\n\n"
+
+            return safe_format_output(result_text)
+
         except Exception as e:
             logger.error(f"CMIS search failed: {e}")
             return safe_format_output(f"ERROR: CMIS search failed: {str(e)}")

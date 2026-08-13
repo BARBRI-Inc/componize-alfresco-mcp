@@ -155,10 +155,15 @@ async def browse_repository_impl(
             
     except Exception as e:
         # Preserve Unicode characters in error messages
-        error_msg = f"ERROR: Repository browse failed: {str(e)}"
+        error_msg = (
+            f"ERROR: Repository browse failed: {str(e)}\n\n"
+            "parent_id must be one of the special aliases -root- (repository root), "
+            "-my- (current user's home), -shared- (Shared folder), or a real node ID "
+            "(a UUID) obtained from a previous browse/search result -- not an arbitrary name."
+        )
         if ctx:
             await ctx.error(error_msg)
-        return error_msg 
+        return error_msg
 
     if ctx:
         await ctx.info("Repository browse completed!") 

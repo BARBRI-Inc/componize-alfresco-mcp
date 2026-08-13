@@ -8,6 +8,7 @@ from fastmcp import Context
 
 from ...utils.connection import ensure_connection
 from ...utils.json_utils import safe_format_output
+from ...utils.search_execute import execute_search
 
 logger = logging.getLogger(__name__)
 
@@ -69,79 +70,44 @@ async def advanced_search_impl(
     try:
         # Get all clients that ensure_connection() already created
         master_client = await ensure_connection()
-        
-        # Import search_utils
-        from python_alfresco_api.utils import search_utils
-        
+
+        from python_alfresco_api.raw_clients.alfresco_search_client.search_client.models import (
+            RequestPagination,
+            RequestQuery,
+            RequestQueryLanguage,
+            RequestSortDefinitionItem,
+            RequestSortDefinitionItemType,
+            SearchRequest,
+        )
+
         # Access the search client that was already created
         search_client = master_client.search
-        
+
         logger.debug(f"Advanced search for: '{safe_query_display}', sort: {safe_sort_field_display} ({'asc' if actual_sort_ascending else 'desc'})")
-        
+
         if ctx:
             await ctx.report_progress(0.3)
-        
-        # Use search_utils.advanced_search() utility with existing search_client
+
+        search_request = SearchRequest(
+            query=RequestQuery(query=actual_query, language=RequestQueryLanguage.AFTS),
+            paging=RequestPagination(max_items=actual_max_results, skip_count=0),
+            sort=[
+                RequestSortDefinitionItem(
+                    field=actual_sort_field,
+                    ascending=actual_sort_ascending,
+                    type_=RequestSortDefinitionItemType.FIELD,
+                )
+            ],
+        )
+
         if ctx:
             await ctx.report_progress(0.5)
-        
-        try:
-            # Use search_utils.advanced_search() with existing search_client that has working authentication
-            search_results = search_utils.advanced_search(
-                search_client,
-                actual_query,
-                max_items=actual_max_results,
-                sort_by=actual_sort_field,
-                sort_ascending=actual_sort_ascending
-            )
-            
-            if not search_results:
-                logger.debug("Advanced search returned None, attempting fallback to simple search")
-                search_results = search_utils.simple_search(search_client, actual_query, max_items=actual_max_results)
-                
-            # Check for different possible SearchResult structures
-            if not search_results:
-                logger.error(f"No search results returned")
-                return safe_format_output(f"ERROR: Advanced search failed - no results returned")
-                
-            # Try to get entries from different possible structures
-            entries = []
-            
-            if hasattr(search_results, 'list') and search_results.list and hasattr(search_results.list, 'entries'):
-                entries = search_results.list.entries if search_results.list else []
-                logger.debug(f"Found entries using list attribute: {len(entries)}")
-            elif hasattr(search_results, 'list_') and search_results.list_ and hasattr(search_results.list_, 'entries'):
-                entries = search_results.list_.entries if search_results.list_ else []
-                logger.debug(f"Found entries using list_ attribute: {len(entries)}")
-            elif hasattr(search_results, 'entries'):
-                entries = search_results.entries
-                logger.debug(f"Found entries using direct entries attribute: {len(entries)}")
-            elif hasattr(search_results, 'results'):
-                entries = search_results.results
-                logger.debug(f"Found entries using results attribute: {len(entries)}")
-            else:
-                logger.error(f"SearchResult structure not recognized")
-                return safe_format_output(f"ERROR: Advanced search failed - unknown SearchResult structure")
-                
-        except Exception as e:
-            logger.error(f"Advanced search failed: {e}")
-            # Try fallback to simple search
-            try:
-                logger.debug("Attempting fallback to simple search after advanced search error")
-                search_results = search_utils.simple_search(search_client, actual_query, max_items=actual_max_results)
-                if not search_results:
-                    return safe_format_output(f"ERROR: Both advanced and simple search failed: {str(e)}")
-                # Extract entries from simple search result
-                entries = []
-                if hasattr(search_results, 'list_') and search_results.list_ and hasattr(search_results.list_, 'entries'):
-                    entries = search_results.list_.entries if search_results.list_ else []
-                    logger.debug(f"Fallback simple search found {len(entries)} results")
-                else:
-                    return safe_format_output(f"ERROR: Both advanced and simple search failed: {str(e)}")
-            except Exception as fallback_error:
-                logger.error(f"Fallback simple search also failed: {fallback_error}")
-                return safe_format_output(f"ERROR: Advanced search failed: {str(e)}")
-        
+
+        entries, error = execute_search(search_client, search_request)
+        if error:
+            logger.error(f"Advanced search failed: {error}")
+            return safe_format_output(f"ERROR: Advanced search failed - {error}")
+
         if ctx:
             await ctx.report_progress(1.0)
         

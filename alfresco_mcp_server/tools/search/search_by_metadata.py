@@ -8,6 +8,7 @@ from fastmcp import Context
 
 from ...utils.connection import ensure_connection
 from ...utils.json_utils import safe_format_output
+from ...utils.search_execute import execute_search
 
 logger = logging.getLogger(__name__)
 
@@ -92,27 +93,32 @@ async def search_by_metadata_impl(
         # If no parameters provided, search everything
         if not search_query or search_query.strip() == "":
             search_query = "*"
-        
+
         # Execute search using existing search client
         if ctx:
             await ctx.report_progress(0.5)
-        
+
+        from python_alfresco_api.raw_clients.alfresco_search_client.search_client.models import (
+            RequestPagination,
+            RequestQuery,
+            RequestQueryLanguage,
+            SearchRequest,
+        )
+
         try:
-            # Use correct working pattern: search_utils.simple_search with existing search_client
-            search_results = search_utils.simple_search(search_client, search_query, max_items=actual_max_results)
-            
-            if not search_results or not hasattr(search_results, 'list_'):
-                return safe_format_output(f"ERROR: Search failed - invalid response from Alfresco")
-                
+            search_request = SearchRequest(
+                query=RequestQuery(query=search_query, language=RequestQueryLanguage.AFTS),
+                paging=RequestPagination(max_items=actual_max_results, skip_count=0),
+            )
+            entries, error = execute_search(search_client, search_request)
+            if error:
+                logger.error(f"Search failed: {error}")
+                return safe_format_output(f"ERROR: Search failed - {error}")
+
         except Exception as e:
             logger.error(f"Search failed: {e}")
             return safe_format_output(f"ERROR: Search failed: {str(e)}")
-        
-        # Process results using correct pattern
-        entries = []
-        if hasattr(search_results, 'list_') and search_results.list_ and hasattr(search_results.list_, 'entries'):
-            entries = search_results.list_.entries if search_results.list_ else []
-        
+
         if ctx:
             await ctx.report_progress(1.0)
         
