@@ -1,0 +1,69 @@
+{
+  "manifest_version": "0.4",
+  "name": "componize-alfresco-mcp",
+  "display_name": "BARBRI Componize (Alfresco)",
+  "version": "0.1.0",
+  "description": "Search, browse, and manage documents in BARBRI's Componize-hosted Alfresco CMS from Claude.",
+  "long_description": "Lets Claude Desktop search, browse, upload/download, and manage properties on documents stored in BARBRI's Componize-hosted Alfresco Content Services repository. Each user signs in with their own Componize login, so actions in Alfresco are attributed to them individually. Forked from the open-source python-alfresco-mcp-server project. Componize-specific (DITA CMS) tools are planned for a future version.",
+  "author": {
+    "name": "BARBRI Platform Engineering"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BARBRI-Inc/componize-alfresco-mcp.git"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["alfresco", "componize", "cms", "dita", "barbri"],
+  "server": {
+    "type": "uv",
+    "entry_point": "alfresco_mcp_server/fastmcp_server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${__dirname}",
+        "-m",
+        "alfresco_mcp_server.fastmcp_server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "ALFRESCO_URL": "${user_config.alfresco_url}",
+        "ALFRESCO_AUTH_METHOD": "basic",
+        "ALFRESCO_USERNAME": "${user_config.alfresco_username}",
+        "ALFRESCO_PASSWORD": "${user_config.alfresco_password}",
+        "ALFRESCO_VERIFY_SSL": "true"
+      }
+    }
+  },
+  "user_config": {
+    "alfresco_url": {
+      "type": "string",
+      "title": "Componize/Alfresco URL",
+      "description": "TODO(BARBRI): base REST API URL for the Componize-hosted Alfresco instance, once known.",
+      "required": true,
+      "default": "https://TODO-componize-instance.barbri.com/alfresco/api/-default-/public/alfresco/versions/1"
+    },
+    "alfresco_username": {
+      "type": "string",
+      "title": "Componize Username",
+      "description": "Your personal Componize/Alfresco login username.",
+      "required": true
+    },
+    "alfresco_password": {
+      "type": "string",
+      "title": "Componize Password",
+      "description": "Your personal Componize/Alfresco login password. Stored securely in your OS keychain, never in a file.",
+      "sensitive": true,
+      "required": true
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=1.0.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "python": ">=3.10"
+    }
+  }
+}

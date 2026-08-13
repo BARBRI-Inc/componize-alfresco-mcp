@@ -5,6 +5,15 @@
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://pypi.org/project/python-alfresco-mcp-server/)
 [![License](https://img.shields.io/github/license/stevereiner/python-alfresco-mcp-server)](https://github.com/stevereiner/python-alfresco-mcp-server/blob/main/LICENSE)
 
+## BARBRI fork notes
+
+This is a BARBRI fork of [`stevereiner/python-alfresco-mcp-server`](https://github.com/stevereiner/python-alfresco-mcp-server) (`upstream` remote), wiring Claude up to BARBRI's Componize-hosted Alfresco CMS.
+
+- **Status**: MVP. Connection details (`ALFRESCO_URL` and per-user Componize credentials) are still placeholders — see `.env` (gitignored, copy from `sample-dot-env.txt`) and `manifest.json`'s `user_config` block, both marked `TODO(BARBRI)`.
+- **Distribution**: packaged as a [Claude Desktop Extension](https://blog.modelcontextprotocol.io/posts/2025-11-20-adopting-mcpb/) (`.mcpb`) so non-technical users install it with one click instead of cloning this repo. Each user enters their own Componize login when installing; it's stored in their OS keychain, not in this repo or the bundle.
+- **Build the bundle**: `npx @anthropic-ai/mcpb pack . componize-alfresco-mcp.mcpb` (validates `manifest.json` and zips everything not excluded by `.mcpbignore`). The built `.mcpb` is not committed — rebuild on demand or attach to a release.
+- **Planned next**: Componize-specific (DITA CMS) tools — topic/map relationships, publishing pipeline — layered on top of this fork's core Alfresco tools.
+
 **Model Context Protocol Server for Alfresco Content Services**
 
 A full featured MCP server for Alfresco in search and content management areas. It provides the following tools: full text search (content and properties), advanced search, metadata search, CMIS SQL like search, upload, download,

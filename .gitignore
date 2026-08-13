@@ -141,6 +141,9 @@ celerybeat.pid
 .venv
 env/
 venv/
+
+# Built MCPB bundles (built on demand via `npx @anthropic-ai/mcpb pack`, not versioned)
+*.mcpb
 ENV/
 env.bak/
 venv.bak/
