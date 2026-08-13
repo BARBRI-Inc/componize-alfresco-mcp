@@ -41,9 +41,9 @@
     "alfresco_url": {
       "type": "string",
       "title": "Componize/Alfresco URL",
-      "description": "TODO(BARBRI): base REST API URL for the Componize-hosted Alfresco instance, once known.",
+      "description": "Bare host only (e.g. https://barbri.componize.com) — no /alfresco/api/... path. The client appends the full REST path itself on every call; including it here causes every request to 404.",
       "required": true,
-      "default": "https://TODO-componize-instance.barbri.com/alfresco/api/-default-/public/alfresco/versions/1"
+      "default": "https://barbri.componize.com"
     },
     "alfresco_username": {
       "type": "string",
