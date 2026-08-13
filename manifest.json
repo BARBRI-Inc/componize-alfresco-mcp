@@ -2,7 +2,7 @@
   "manifest_version": "0.4",
   "name": "componize-alfresco-mcp",
   "display_name": "BARBRI Componize (Alfresco)",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Search, browse, and manage documents in BARBRI's Componize-hosted Alfresco CMS from Claude.",
   "long_description": "Lets Claude Desktop search, browse, upload/download, and manage properties on documents stored in BARBRI's Componize-hosted Alfresco Content Services repository. Each user signs in with their own Componize login, so actions in Alfresco are attributed to them individually. Forked from the open-source python-alfresco-mcp-server project. Componize-specific (DITA CMS) tools are planned for a future version.",
   "author": {
